@@ -24,6 +24,8 @@ export interface FirestoreOrder {
   status: "pending" | "accepted" | "ready_for_pickup" | "rejected" | "completed" | "delivered" | "picked_up" | "at_store"
   storeId: string
   createdAt: Date
+  driverStatus?: string
+  driver?: { name?: string; phone?: string; photoURL?: string; vehicle?: string }
 }
 
 interface OrderPopupPanelProps {

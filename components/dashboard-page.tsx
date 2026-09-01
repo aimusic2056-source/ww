@@ -4,6 +4,7 @@ import { Star, TrendingUp } from "lucide-react"
 import { WaterDroplets } from "@/components/water-droplets"
 import type { StoreData } from "@/lib/store-data"
 import type { FirestoreOrder } from "@/components/order-popup-panel"
+import { isOrderCompleted, isRevenueOrder, isToday } from "@/lib/order-status"
 
 interface DashboardPageProps {
   data: StoreData & { storeInfo?: { logo?: string } }

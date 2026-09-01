@@ -16,6 +16,7 @@ import { AddProductPage } from "@/components/add-product-page"
 import { OpeningHoursPage } from "@/components/opening-hours-page"
 import { StoreInfoPage } from "@/components/store-info-page"
 import { PendingOrdersPage } from "@/components/pending-orders-page"
+import { DriverAssignedPage } from "@/components/driver-assigned-page"
 import { BottomNavigation } from "@/components/bottom-navigation"
 import { OrderPopupPanel } from "@/components/order-popup-panel"
 import { useRealtimeOrders } from "@/hooks/use-realtime-orders"
@@ -496,13 +497,10 @@ export default function MerchantApp() {
             />
           )}
           {activePage === "pendingOrders" && (
-            <PendingOrdersPage
-              pendingOrders={pendingOrders}
-              onBack={() => {
-                setDirection("left")
-                setActivePage("notifications")
-              }}
-            />
+            <PendingOrdersPage pendingOrders={pendingOrders} onBack={() => { setDirection("left"); setActivePage("notifications") }} />
+          )}
+          {activePage === "driverAssigned" && (
+            <DriverAssignedPage orders={allOrders} onBack={() => { setDirection("left"); setActivePage("notifications") }} />
           )}
         </div>
       </div>
