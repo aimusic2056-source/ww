@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback, useEffect } from "react"
+import { useState, useCallback, useEffect, useRef } from "react"
 import { onAuthStateChanged, signOut, type User } from "firebase/auth"
 import { doc, collection, getDocs, deleteDoc, onSnapshot, type DocumentSnapshot } from "firebase/firestore"
 import { auth, db } from "@/lib/firebase"
@@ -34,6 +34,7 @@ export default function MerchantApp() {
   const [direction, setDirection] = useState<"left" | "right">("right")
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
+  const storeListenerRef = useRef<(() => void) | null>(null)
 
   // Real-time orders from Firestore
   const {
@@ -56,15 +57,14 @@ export default function MerchantApp() {
 
     try {
       const storeDoc = await new Promise<DocumentSnapshot>((resolve, reject) => {
-        let unsubscribe: (() => void) | undefined
-        unsubscribe = onSnapshot(
+        const listener = onSnapshot(
           doc(db, "stores", uid),
           (snapshot) => {
             resolve(snapshot)
-            unsubscribe?.()
           },
           reject,
         )
+        storeListenerRef.current = listener
       })
       if (storeDoc.exists()) {
         const data = storeDoc.data()
@@ -165,7 +165,11 @@ export default function MerchantApp() {
       setIsLoading(false)
     })
 
-    return () => unsubscribe()
+    return () => {
+      unsubscribe()
+      storeListenerRef.current?.()
+      storeListenerRef.current = null
+    }
   }, [fetchStoreData])
 
   // Handle successful signup
@@ -366,7 +370,7 @@ export default function MerchantApp() {
   const unreadCount = storeData.notifications.filter((n) => !n.read).length
 
   // Determine if bottom nav should be hidden
-  const hideBottomNav = ["products", "addProduct", "openingHours", "storeInfo", "pendingOrders"].includes(activePage)
+  const hideBottomNav = ["products", "addProduct", "openingHours", "storeInfo", "pendingOrders", "driverAssigned"].includes(activePage)
 
   // Show loading state while checking auth
   if (isLoading) {
@@ -446,6 +450,7 @@ export default function MerchantApp() {
             <NotificationsPage
               storeId={currentUserId}
               pendingOrders={pendingOrders}
+              realtimeOrders={allOrders}
               onMarkAllRead={handleMarkAllRead}
               onNavigate={handleNavigate}
             />

@@ -25,6 +25,15 @@ export interface FirestoreOrder {
   storeId: string
   createdAt: Date
   driverStatus?: string
+  driverSnapshot?: {
+    brand?: string
+    carImage?: string
+    color?: string
+    firstName?: string
+    model?: string
+    plateNumber?: string
+    profilePicture?: string
+  }
   driver?: { name?: string; phone?: string; photoURL?: string; vehicle?: string }
 }
 

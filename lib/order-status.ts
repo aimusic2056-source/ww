@@ -2,6 +2,7 @@ export const ALL_ORDER_STATUSES = [
   "pending",
   "accepted",
   "ready_for_pickup",
+  "driver_assigned",
   "rejected",
   "completed",
   "delivered",

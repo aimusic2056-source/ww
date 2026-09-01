@@ -38,21 +38,16 @@ export function DashboardPage({
   const ordersToday = todayOrders.length
   
   // Completed orders count for today - all statuses that represent completion
-  const todayCompletedOrders = todayOrders.filter(o =>
-    ["ready_for_pickup", "completed", "delivered", "picked_up", "at_store"].includes(o.status)
-  ).length
+  const todayCompletedOrders = todayOrders.filter(o => isOrderCompleted(o.status)).length
   
   // Pending orders count for today (used only for the "X Completed / X Pending" sub-line)
   const todayPendingOrders = todayOrders.filter(o => o.status === "pending").length
 
-  // ALL pending orders (within the 2-week query window) - shown on the pendingOrdersCard
-  const allPendingOrders = realtimeOrders.filter(o => o.status === "pending").length
+  // Pending Orders resets daily: only pending orders created today.
+  const allPendingOrders = todayOrders.filter(o => o.status === "pending").length
 
-  // Revenue-generating statuses - captured once an order is accepted and persists through completion
-  const revenueStatuses = ["ready_for_pickup", "completed", "delivered", "accepted", "at_store", "picked_up"]
-
-  // Today's revenue
-  const todayRevenueOrders = todayOrders.filter(o => revenueStatuses.includes(o.status))
+  // Today's revenue includes accepted orders and every completed status.
+  const todayRevenueOrders = todayOrders.filter(o => isRevenueOrder(o.status))
   const revenueToday = todayRevenueOrders.reduce((sum, o) => sum + o.total, 0)
 
   // Calculate weekly revenue (last 7 days) using the same revenue-status logic
@@ -62,13 +57,8 @@ export function DashboardPage({
   const weeklyRevenue = realtimeOrders
     .filter(o => {
       const orderDate = new Date(o.createdAt)
-      return orderDate >= sevenDaysAgo && revenueStatuses.includes(o.status)
+      return orderDate >= sevenDaysAgo && isRevenueOrder(o.status)
     })
-    .reduce((sum, o) => sum + o.total, 0)
-
-  // All-time revenue from every revenue-generating order in the shared Firestore stream
-  const allTimeRevenue = realtimeOrders
-    .filter(o => revenueStatuses.includes(o.status))
     .reduce((sum, o) => sum + o.total, 0)
 
   // Recent orders - show 5 most recent orders from Firestore 
@@ -86,7 +76,7 @@ export function DashboardPage({
 
   // Map status for display - all completion statuses render as "completed"
   const getDisplayStatus = (status: string): "pending" | "accepted" | "completed" => {
-    if (["ready_for_pickup", "at_store", "picked_up", "delivered", "completed"].includes(status)) return "completed"
+    if (isOrderCompleted(status)) return "completed"
     if (status === "accepted") return "accepted"
     return "pending"
   }
@@ -210,22 +200,6 @@ export function DashboardPage({
               ZMW {weeklyRevenue.toLocaleString("en-US", { minimumFractionDigits: 2 })}
             </p>
             <p className="text-[10px] text-white/60 mt-0.5">This Week</p>
-          </div>
-          <div
-            id="allTimeRevenueCard"
-            className="rounded-xl p-3 transition-transform duration-200 active:scale-95"
-            style={{
-              backdropFilter: "blur(8px)",
-              WebkitBackdropFilter: "blur(8px)",
-              background: "rgba(255, 255, 255, 0.15)",
-              border: "1px solid rgba(255, 255, 255, 0.25)",
-            }}
-          >
-            <p className="text-xs text-white/80">All-time Revenue</p>
-            <p className="text-xl font-bold text-[#22c55e] mt-1">
-              ZMW {allTimeRevenue.toLocaleString("en-US", { minimumFractionDigits: 2 })}
-            </p>
-            <p className="text-[10px] text-white/60 mt-0.5">Since opening</p>
           </div>
           <div 
             id="customerRatingCard" 
