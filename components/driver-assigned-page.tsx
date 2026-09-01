@@ -1,14 +1,32 @@
 "use client"
 
-import { ChevronLeft, Truck } from "lucide-react"
+import { ChevronLeft, MapPin, Truck, UserRound } from "lucide-react"
 import type { FirestoreOrder } from "@/components/order-popup-panel"
 
 export function DriverAssignedPage({ orders, onBack }: { orders: FirestoreOrder[]; onBack: () => void }) {
-  const assigned = orders.filter(order => order.driverStatus || order.driver)
-  return <div className="flex flex-col h-full bg-background">
-    <header className="bg-card px-4 pt-5 pb-4 border-b border-border"><div className="flex items-center gap-3"><button onClick={onBack} aria-label="Go back"><ChevronLeft /></button><h1 className="text-2xl font-bold">Driver Assigned</h1></div></header>
-    <main className="flex-1 overflow-y-auto px-4 py-4"><div className="flex flex-col gap-3">
-      {assigned.length === 0 ? <div className="py-16 text-center text-muted-foreground">No driver assignments recorded yet.</div> : assigned.map(order => <article key={order.id} className="bg-card border border-border rounded-xl p-4 shadow-sm"><div className="flex items-start gap-3"><div className="size-12 rounded-xl bg-primary/10 flex items-center justify-center"><Truck className="text-primary" /></div><div className="min-w-0 flex-1"><div className="flex justify-between gap-3"><h2 className="font-bold">Order #{order.orderId}</h2><span className="text-xs text-muted-foreground">{order.driverStatus || "Assigned"}</span></div><p className="text-sm text-muted-foreground">{order.driver?.name || "Driver assigned"}</p><p className="text-xs text-muted-foreground mt-2">{order.destinationAddress}</p><p className="text-xs text-muted-foreground mt-1">Recipient: {order.userName}</p></div></div></article>)}
-    </div></main>
+  const assignments = orders
+    .filter(order => order.driverStatus && order.driverSnapshot)
+    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+
+  return <div className="flex h-full flex-col bg-background">
+    <header className="shrink-0 border-b border-border bg-card px-4 pb-4 pt-5">
+      <div className="flex items-center gap-3"><button onClick={onBack} aria-label="Go back" className="text-card-foreground"><ChevronLeft className="size-6" /></button><h1 className="text-2xl font-bold text-card-foreground">Driver Assigned</h1></div>
+    </header>
+    <main className="flex-1 overflow-y-auto px-4 py-4 scrollbar-hide">
+      <div className="flex flex-col gap-3">
+        {assignments.length === 0 ? <div className="py-16 text-center text-muted-foreground">No driver assignments recorded yet.</div> : assignments.map(order => {
+          const driver = order.driverSnapshot!
+          const vehicle = [driver.color, driver.brand, driver.model].filter(Boolean).join(" ") || "Vehicle details unavailable"
+          return <article key={order.id} className="rounded-xl border border-border bg-card p-4 shadow-sm">
+            <div className="flex items-start gap-3">
+              <div className="size-12 shrink-0 overflow-hidden rounded-xl bg-primary/10 flex items-center justify-center">{driver.profilePicture ? <img src={driver.profilePicture} alt={`${driver.firstName || "Driver"} profile`} className="size-full object-cover" /> : <Truck className="text-primary" />}</div>
+              <div className="min-w-0 flex-1"><div className="flex items-start justify-between gap-3"><div><h2 className="font-bold text-card-foreground">{driver.firstName || "Driver assigned"}</h2><p className="text-sm text-muted-foreground">{vehicle}</p></div>{driver.plateNumber && <span className="shrink-0 rounded-md bg-muted px-2 py-1 text-xs font-semibold text-card-foreground">{driver.plateNumber}</span>}</div>
+                <div className="mt-3 flex flex-col gap-1 text-xs text-muted-foreground"><p className="flex items-center gap-1.5"><UserRound className="size-3.5" />Recipient: {order.userName}</p><p className="flex items-start gap-1.5"><MapPin className="mt-0.5 size-3.5 shrink-0" />{order.destinationAddress}</p></div>
+              </div>
+            </div>
+          </article>
+        })}
+      </div>
+    </main>
   </div>
 }
