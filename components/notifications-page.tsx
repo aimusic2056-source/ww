@@ -15,8 +15,9 @@ export function NotificationsPage({ pendingOrders, realtimeOrders, onMarkAllRead
   // Tapping it opens the full Pending Orders page, where all pending and accepted
   // orders remain available with their status-specific actions.
   const latestPending = useMemo(
-    () => [...pendingOrders].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())[0],
-    [pendingOrders],
+    () => [...pendingOrders, ...realtimeOrders.filter((order) => order.status === "pending")]
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())[0],
+    [pendingOrders, realtimeOrders],
   )
   const latestPayment = useMemo(() => realtimeOrders.filter(o => isRevenueOrder(o.status)).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())[0], [realtimeOrders])
   const latestDriver = useMemo(() => realtimeOrders.filter(o => o.driverSnapshot && o.driverStatus).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())[0], [realtimeOrders])
