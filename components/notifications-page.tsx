@@ -11,7 +11,13 @@ const styles = { new_order: [ShoppingBag, "bg-[#22c55e]/15", "text-[#22c55e]"], 
 
 export function NotificationsPage({ pendingOrders, realtimeOrders, onMarkAllRead, onNavigate }: Props) {
   const [readInstances, setReadInstances] = useState<Record<string, string>>({})
-  const latestPending = pendingOrders[0]
+  // Keep the pending-order notification card tied to the newest pending order.
+  // Tapping it opens the full Pending Orders page, where all pending and accepted
+  // orders remain available with their status-specific actions.
+  const latestPending = useMemo(
+    () => [...pendingOrders].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())[0],
+    [pendingOrders],
+  )
   const latestPayment = useMemo(() => realtimeOrders.filter(o => isRevenueOrder(o.status)).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())[0], [realtimeOrders])
   const latestDriver = useMemo(() => realtimeOrders.filter(o => o.driverSnapshot && o.driverStatus).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())[0], [realtimeOrders])
   const notifications = useMemo(() => {
