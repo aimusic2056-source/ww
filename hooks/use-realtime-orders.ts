@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react"
 import { collection, query, where, onSnapshot, orderBy, Timestamp } from "firebase/firestore"
 import { db } from "@/lib/firebase"
-import { ALL_ORDER_STATUSES, isOrderCompleted, isRevenueOrder } from "@/lib/order-status"
+import { ALL_ORDER_STATUSES, isOrderCompleted, isRevenueOrder, isToday, isWithinPastDays } from "@/lib/order-status"
 import type { FirestoreOrder } from "@/components/order-popup-panel"
 
 interface UseRealtimeOrdersReturn {
@@ -37,16 +37,8 @@ export function useRealtimeOrders(storeId: string | null): UseRealtimeOrdersRetu
     return new Date()
   }
 
-  const getTodayOrders = useCallback((orders: FirestoreOrder[]) => {
-    const today = new Date(); today.setHours(0, 0, 0, 0)
-    return orders.filter(order => { const date = new Date(order.createdAt); date.setHours(0, 0, 0, 0); return date.getTime() === today.getTime() })
-  }, [])
-
-  const getPastOrders = useCallback((orders: FirestoreOrder[]) => {
-    const ninetyDaysAgo = new Date(); ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90); ninetyDaysAgo.setHours(0, 0, 0, 0)
-    const today = new Date(); today.setHours(0, 0, 0, 0)
-    return orders.filter(order => { const date = new Date(order.createdAt); date.setHours(0, 0, 0, 0); return isOrderCompleted(order.status) && date >= ninetyDaysAgo && date < today })
-  }, [])
+  const getTodayOrders = useCallback((orders: FirestoreOrder[]) => orders.filter(order => isToday(order.createdAt)), [])
+  const getPastOrders = useCallback((orders: FirestoreOrder[]) => orders.filter(order => isOrderCompleted(order.status) && isWithinPastDays(order.createdAt, 90)), [])
 
   const dismissPopup = useCallback(() => {
     if (pendingOrderForPopup) setDismissedOrderIds(prev => new Set([...prev, pendingOrderForPopup.id]))

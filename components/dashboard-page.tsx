@@ -24,15 +24,7 @@ export function DashboardPage({
   // Calculate today's metrics from real-time orders
   // Orders Today = ALL orders for today (pending + accepted + completed)
   // Does NOT include rejected orders
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  
-  const todayOrders = realtimeOrders.filter(order => {
-    const orderDate = new Date(order.createdAt)
-    orderDate.setHours(0, 0, 0, 0)
-    // Include pending, accepted, ready_for_pickup - NOT rejected
-    return orderDate.getTime() === today.getTime() && order.status !== "rejected"
-  })
+  const todayOrders = realtimeOrders.filter(order => isToday(order.createdAt) && order.status !== "rejected")
 
   // Orders Today count - all non-rejected orders for today
   const ordersToday = todayOrders.length

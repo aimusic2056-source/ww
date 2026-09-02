@@ -17,6 +17,7 @@ import { OpeningHoursPage } from "@/components/opening-hours-page"
 import { StoreInfoPage } from "@/components/store-info-page"
 import { PendingOrdersPage } from "@/components/pending-orders-page"
 import { DriverAssignedPage } from "@/components/driver-assigned-page"
+import { PaymentsPage } from "@/components/payments-page"
 import { BottomNavigation } from "@/components/bottom-navigation"
 import { OrderPopupPanel } from "@/components/order-popup-panel"
 import { useRealtimeOrders } from "@/hooks/use-realtime-orders"
@@ -48,7 +49,7 @@ export default function MerchantApp() {
     handleStatusUpdate,
   } = useRealtimeOrders(currentUserId)
 
-  const pageOrder = ["dashboard", "orders", "notifications", "settings"]
+  const pageOrder = ["dashboard", "orders", "notifications", "payments", "settings"]
 
   // Fetch store data from Firestore with retry logic
   const fetchStoreData = useCallback(async (uid: string, retryCount = 0) => {
@@ -370,7 +371,7 @@ export default function MerchantApp() {
   const unreadCount = storeData.notifications.filter((n) => !n.read).length
 
   // Determine if bottom nav should be hidden
-  const hideBottomNav = ["products", "addProduct", "openingHours", "storeInfo", "pendingOrders", "driverAssigned"].includes(activePage)
+  const hideBottomNav = ["products", "addProduct", "openingHours", "storeInfo", "pendingOrders", "driverAssigned", "payments"].includes(activePage)
 
   // Show loading state while checking auth
   if (isLoading) {
@@ -504,9 +505,12 @@ export default function MerchantApp() {
           {activePage === "pendingOrders" && (
             <PendingOrdersPage pendingOrders={pendingOrders} onBack={() => { setDirection("left"); setActivePage("notifications") }} />
           )}
-          {activePage === "driverAssigned" && (
-            <DriverAssignedPage orders={allOrders} onBack={() => { setDirection("left"); setActivePage("notifications") }} />
-          )}
+  {activePage === "driverAssigned" && (
+  <DriverAssignedPage orders={allOrders} onBack={() => { setDirection("left"); setActivePage("notifications") }} />
+  )}
+  {activePage === "payments" && (
+  <PaymentsPage orders={allOrders} onBack={() => { setDirection("left"); setActivePage("notifications") }} />
+  )}
         </div>
       </div>
 

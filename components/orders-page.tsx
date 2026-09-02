@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { ChevronLeft, X } from "lucide-react"
-import { isOrderCompleted } from "@/lib/order-status"
+import { isOrderCompleted, isToday, isWithinPastDays } from "@/lib/order-status"
 import type { FirestoreOrder } from "@/components/order-popup-panel"
 
 interface OrdersPageProps {
@@ -16,29 +16,8 @@ export function OrdersPage({ realtimeOrders }: OrdersPageProps) {
   const allOrders = realtimeOrders
 
   // Filter today's orders
-  const todayOrders = allOrders.filter(order => {
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    const orderDate = new Date(order.createdAt)
-    orderDate.setHours(0, 0, 0, 0)
-    return orderDate.getTime() === today.getTime()
-  })
-
-  // Filter past completed orders within the last 90 days
-  const pastOrders = allOrders.filter(order => {
-    const ninetyDaysAgo = new Date()
-    ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90)
-    ninetyDaysAgo.setHours(0, 0, 0, 0)
-    
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    
-    const orderDate = new Date(order.createdAt)
-    orderDate.setHours(0, 0, 0, 0)
-    
-    const isWithin90Days = orderDate >= ninetyDaysAgo && orderDate < today
-    return isOrderCompleted(order.status) && isWithin90Days
-  })
+  const todayOrders = allOrders.filter(order => isToday(order.createdAt))
+  const pastOrders = allOrders.filter(order => isOrderCompleted(order.status) && isWithinPastDays(order.createdAt, 90))
 
   const displayedOrders = activeTab === "today" ? todayOrders : pastOrders
 
@@ -52,12 +31,6 @@ export function OrdersPage({ realtimeOrders }: OrdersPageProps) {
     return date.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false })
   }
 
-  // Map status for display
-  const getDisplayStatus = (status: string): "pending" | "accepted" | "completed" => {
-    if (status === "ready_for_pickup") return "completed"
-    if (status === "accepted") return "accepted"
-    return "pending"
-  }
 
   return (
     <div className="flex flex-col h-full">
@@ -124,7 +97,6 @@ export function OrdersPage({ realtimeOrders }: OrdersPageProps) {
                 key={order.id} 
                 order={order} 
                 formatTime={formatTime}
-                getDisplayStatus={getDisplayStatus}
                 onClick={() => setSelectedOrder(order)}
               />
             ))}
@@ -146,11 +118,10 @@ export function OrdersPage({ realtimeOrders }: OrdersPageProps) {
 interface OrderCardProps {
   order: FirestoreOrder
   formatTime: (date: Date) => string
-  getDisplayStatus: (status: string) => "pending" | "accepted" | "completed"
   onClick: () => void
 }
 
-function OrderCard({ order, formatTime, getDisplayStatus, onClick }: OrderCardProps) {
+function OrderCard({ order, formatTime, onClick }: OrderCardProps) {
   // Get the first item's image for this order
   const firstItemImage = order.items.length > 0 && order.items[0].image 
     ? order.items[0].image 
@@ -180,7 +151,7 @@ function OrderCard({ order, formatTime, getDisplayStatus, onClick }: OrderCardPr
         </div>
         <div className="flex items-center justify-between mt-1">
           <p className="text-xs text-muted-foreground">{order.userName}</p>
-          <OrderStatusBadge status={getDisplayStatus(order.status)} />
+          <OrderStatusBadge status={isOrderCompleted(order.status) ? "completed" : order.status === "accepted" ? "accepted" : "pending"} />
         </div>
         <p className="text-xs text-muted-foreground mt-0.5">{formatTime(order.createdAt)}</p>
       </div>
