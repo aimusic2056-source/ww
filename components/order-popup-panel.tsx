@@ -348,13 +348,9 @@ export function OrderPopupPanel({ order, onClose, onStatusUpdate }: OrderPopupPa
               <span className="text-gray-400 text-sm">Subtotal</span>
               <span className="text-gray-600 text-sm">ZMW {order.subtotal.toFixed(2)}</span>
             </div>
-            <div className="flex justify-between items-center py-1">
-              <span className="text-gray-400 text-sm">Delivery Fee</span>
-              <span className="text-gray-600 text-sm">ZMW {order.deliveryFee.toFixed(2)}</span>
-            </div>
             <div className="flex justify-between items-center py-2 mt-2 border-t border-gray-100">
               <span className="text-base font-bold text-gray-900">Total</span>
-              <span className="text-base font-bold text-gray-900">ZMW {order.total.toFixed(2)}</span>
+              <span className="text-base font-bold text-gray-900">ZMW {order.subtotal.toFixed(2)}</span>
             </div>
           </div>
         </div>

@@ -146,7 +146,7 @@ function OrderCard({ order, formatTime, onClick }: OrderCardProps) {
         <div className="flex items-center justify-between">
           <p className="text-sm font-bold text-card-foreground">#{order.orderId}</p>
           <p className="text-sm font-bold text-card-foreground">
-            ZMW {order.total.toFixed(2)}
+            ZMW {order.subtotal.toFixed(2)}
           </p>
         </div>
         <div className="flex items-center justify-between mt-1">
@@ -257,7 +257,7 @@ function OrderDetailsModal({ order, onClose }: OrderDetailsModalProps) {
           </div>
           <div className="flex justify-between items-center py-2 mt-2 border-t border-gray-100">
             <span className="text-lg font-bold text-gray-900">Total</span>
-            <span className="text-lg font-bold text-gray-900">ZMW {order.total.toFixed(2)}</span>
+            <span className="text-lg font-bold text-gray-900">ZMW {order.subtotal.toFixed(2)}</span>
           </div>
         </div>
       </div>

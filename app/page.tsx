@@ -503,7 +503,7 @@ export default function MerchantApp() {
             />
           )}
           {activePage === "pendingOrders" && (
-            <PendingOrdersPage pendingOrders={pendingOrders} onBack={() => { setDirection("left"); setActivePage("notifications") }} />
+            <PendingOrdersPage pendingOrders={pendingOrders} acceptedOrders={acceptedOrders} onBack={() => { setDirection("left"); setActivePage("notifications") }} />
           )}
   {activePage === "driverAssigned" && (
   <DriverAssignedPage orders={allOrders} onBack={() => { setDirection("left"); setActivePage("notifications") }} />

@@ -40,7 +40,7 @@ export function DashboardPage({
 
   // Today's revenue includes accepted orders and every completed status.
   const todayRevenueOrders = todayOrders.filter(o => isRevenueOrder(o.status))
-  const revenueToday = todayRevenueOrders.reduce((sum, o) => sum + o.total, 0)
+  const revenueToday = todayRevenueOrders.reduce((sum, o) => sum + o.subtotal, 0)
 
   // Calculate weekly revenue (last 7 days) using the same revenue-status logic
   const sevenDaysAgo = new Date()
@@ -51,7 +51,7 @@ export function DashboardPage({
       const orderDate = new Date(o.createdAt)
       return orderDate >= sevenDaysAgo && isRevenueOrder(o.status)
     })
-    .reduce((sum, o) => sum + o.total, 0)
+    .reduce((sum, o) => sum + o.subtotal, 0)
 
   // Recent orders - show 5 most recent orders from Firestore 
   // Include pending, accepted, and completed (ready_for_pickup) - NOT rejected
