@@ -17,10 +17,12 @@ export function DriverAssignedPage({ orders, onBack }: { orders: FirestoreOrder[
         {assignments.length === 0 ? <div className="py-16 text-center text-muted-foreground">No driver assignments recorded yet.</div> : assignments.map(order => {
           const driver = order.driverSnapshot!
           const vehicle = [driver.color, driver.brand, driver.model].filter(Boolean).join(" ") || "Vehicle details unavailable"
+          const quantity = order.items.reduce((sum, item) => sum + (item.quantity || 1), 0)
+          const statusLabel = order.driverStatus === "completed" ? `Driver delivered ${quantity === 1 ? "item" : "items"} to client` : order.status === "at_store" ? "Driver has arrived at store" : order.status === "picked_up" ? "Driver on the way to client" : order.status === "delivered" ? "Driver delivered to client" : "Driver coming to store"
           return <article key={order.id} className="rounded-xl border border-border bg-card p-4 shadow-sm">
             <div className="flex items-start gap-3">
               <div className="size-12 shrink-0 overflow-hidden rounded-xl bg-primary/10 flex items-center justify-center">{driver.profilePicture ? <img src={driver.profilePicture} alt={`${driver.firstName || "Driver"} profile`} className="size-full object-cover" /> : <Truck className="text-primary" />}</div>
-              <div className="min-w-0 flex-1"><div className="flex items-start justify-between gap-3"><div><h2 className="font-bold text-card-foreground">{driver.firstName || "Driver assigned"}</h2><p className="text-sm text-muted-foreground">{vehicle}</p></div>{driver.plateNumber && <span className="shrink-0 rounded-md bg-muted px-2 py-1 text-xs font-semibold text-card-foreground">{driver.plateNumber}</span>}</div>
+              <div className="min-w-0 flex-1"><div className="flex items-start justify-between gap-3"><div><h2 className="font-bold text-card-foreground">{driver.firstName || "Driver assigned"}</h2><p className="text-sm text-muted-foreground">{vehicle}</p><span className="mt-2 inline-flex rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-semibold text-primary">{statusLabel}</span></div>{driver.plateNumber && <span className="shrink-0 rounded-md bg-muted px-2 py-1 text-xs font-semibold text-card-foreground">{driver.plateNumber}</span>}</div>
                 <div className="mt-3 flex flex-col gap-1 text-xs text-muted-foreground"><p className="flex items-center gap-1.5"><UserRound className="size-3.5" />Recipient: {order.userName}</p><p className="flex items-start gap-1.5"><MapPin className="mt-0.5 size-3.5 shrink-0" />{order.destinationAddress}</p></div>
               </div>
             </div>

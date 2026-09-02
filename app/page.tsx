@@ -36,6 +36,7 @@ export default function MerchantApp() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const storeListenerRef = useRef<(() => void) | null>(null)
+  const previousOrdersRef = useRef<Record<string, { status?: string; driverStatus?: string }>>({})
 
   // Real-time orders from Firestore
   const {
@@ -48,6 +49,18 @@ export default function MerchantApp() {
     dismissPopup,
     handleStatusUpdate,
   } = useRealtimeOrders(currentUserId)
+
+  useEffect(() => {
+    if (!isAuthenticated || allOrders.length === 0) return
+    const previous = previousOrdersRef.current
+    const newPending = allOrders.some(order => order.status === "pending" && (!previous[order.id] || previous[order.id].status !== "pending"))
+    const newlyAssigned = allOrders.some(order => order.driverStatus === "assigned" && previous[order.id]?.driverStatus !== "assigned")
+    if (newPending || newlyAssigned) {
+      const audio = new Audio(newPending ? "/sounds/order.mp3" : "/sounds/driver.mp3")
+      audio.play().catch(() => undefined)
+    }
+    previousOrdersRef.current = Object.fromEntries(allOrders.map(order => [order.id, { status: order.status, driverStatus: order.driverStatus }]))
+  }, [allOrders, isAuthenticated])
 
   const pageOrder = ["dashboard", "orders", "notifications", "payments", "settings"]
 
